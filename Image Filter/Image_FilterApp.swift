@@ -11,7 +11,7 @@ import SwiftUI
 struct Image_FilterApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            EditorView()
         }
     }
 }
