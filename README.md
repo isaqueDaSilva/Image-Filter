@@ -97,7 +97,7 @@ ___
 
 ## Roadmap
 
-* Filters and adjustments
+### Filters and adjustments
     [X] Negative [Finished]
     [ ] Brightness and contrast (increase/decrease) [Now]
     [ ] Color inversion [Next]
@@ -107,20 +107,20 @@ ___
     [ ] Posterization (color quantization) [Later] 
     [ ] Mirror/flip and 90° rotation [Later] 
 
-* Binary morphology (on thresholded images)
+### Binary morphology (on thresholded images)
     [ ] Erosion [Later]
     [ ] Dilation [Later]
     [ ] Opening / Closing [Later]
     [ ] Approximate object counting (component estimation on binary masks) [Later]
 
-* Edge and feature detection
-    [ ] Rudimentary edge detection (e.g., Sobel/Prewitt) [Later]
+### Edge and feature detection
+    - Rudimentary edge detection (e.g., Sobel/Prewitt) [Later]
 
-* Capture and real-time
+### Capture and real-time
     [ ] In-app camera access (capture directly from the app) [Later]
     [ ] Real-time preview with filters applied at capture time (as device performance allows) [Later]
 
-* Performance and UX
+### Performance and UX
     [ ] SIMD-first implementations where appropriate [Next]
     [ ] Memory layout and copy minimization improvements [Later]
     [ ] Non-destructive editing workflow [Later]
