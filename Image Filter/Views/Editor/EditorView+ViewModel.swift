@@ -23,6 +23,10 @@ extension EditorView {
         let maximumNumberOfImages = 5
         
         var error: ImageRepresentableError?
+        var isShowingError = false
+        
+        var alert: DefaultAlert? = nil
+        var isShowingAlert = false
         
         var imageSelection: PhotosPickerItem? = nil {
             didSet {
@@ -34,6 +38,14 @@ extension EditorView {
                 }
             }
         }
+    }
+}
+
+// MARK: Alerts
+extension EditorView.ViewModel {
+    func showAlert(_ alert: DefaultAlert) {
+        self.alert = alert
+        self.isShowingAlert = true
     }
 }
 
@@ -98,6 +110,7 @@ extension EditorView.ViewModel {
                     guard let self else { return }
                     self.error = .importFailed
                     self.imageState = .failure
+                    self.isShowingError = true
                 }
             }
             
@@ -133,6 +146,7 @@ extension EditorView.ViewModel {
                     guard let self else { return }
                     imageState = .failure
                     self.error = error as? ImageRepresentableError
+                    self.isShowingError = true
                 }
             }
             
