@@ -46,7 +46,7 @@ This is a living project, oriented toward continuous learning and practical impr
 
 ## Demo
 
-_* Coming Soon _*
+_*Coming Soon*_
 
 ---
 
