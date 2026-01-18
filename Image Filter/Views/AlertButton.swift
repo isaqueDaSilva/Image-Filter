@@ -5,8 +5,6 @@
 //  Created by Isaque da Silva on 1/18/26.
 //
 
-
-import PhotosUI
 import SwiftUI
 
 struct AlertButton: View {
