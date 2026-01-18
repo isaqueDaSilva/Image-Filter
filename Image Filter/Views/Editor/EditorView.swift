@@ -110,12 +110,6 @@ struct EditorView: View {
                             }
                         }
                     }
-                    Button("Save") {
-                        if let selectedImage = viewModel.selectedImage {
-                            photoLibraryHandler.saveImage(selectedImage)
-                            viewModel.emptyCache()
-                        }
-                    }
                 } message: {
                     Text(viewModel.alert?.description ?? "")
                 }
