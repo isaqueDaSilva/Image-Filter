@@ -1,6 +1,6 @@
 # Image Filter
 
-## A fully functional iOS and macOS image filter applier app.
+A fully functional iOS and macOS image filter applier app.
 
 ---
 
