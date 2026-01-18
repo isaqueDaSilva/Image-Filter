@@ -46,6 +46,7 @@ extension Filter {
         private static func createImage(from buffer: vImage_Buffer, and imageFormat: vImage_CGImageFormat) throws(ImageRepresentableError) -> DefaultImage {
             do {
                 let negativeImage = try buffer.createCGImage(format: imageFormat)
+                buffer.free()
                 #if canImport(UIKit)
                 return .init(cgImage: negativeImage)
                 #elseif canImport(AppKit)
