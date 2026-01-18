@@ -11,8 +11,6 @@ import SwiftUI
 struct EditorView: View {
     @State private var viewModel = ViewModel()
     @State private var photoLibraryHandler = PhotoLibraryHandler()
-    @State private var isSavingPhotoAlert = false
-    @State private var isShowingCleanCacheAlert = false
     
     var body: some View {
         NavigationStack {
@@ -58,7 +56,7 @@ struct EditorView: View {
                     ToolbarItem(placement: .confirmationAction) {
                         SaveButton {
                             if viewModel.cache.count > 1 {
-                                isSavingPhotoAlert = true
+                                viewModel.showAlert(.savePhoto)
                             }
                         }
                         .disabled(viewModel.cache.count <= 1)
@@ -66,7 +64,9 @@ struct EditorView: View {
                     
                     ToolbarItem(placement: .cancellationAction) {
                         Button(role: .destructive) {
-                            isShowingCleanCacheAlert = true
+                            if !viewModel.cache.isEmpty {
+                                viewModel.showAlert(.cleanCache)
+                            }
                         } label: {
                             Text("Clean Photo")
                         }
@@ -91,8 +91,25 @@ struct EditorView: View {
                         }
                     }
                 }
-                .alert("Save Photo", isPresented: $isSavingPhotoAlert) {
+                .alert(viewModel.error?.title ?? "", isPresented: $viewModel.isShowingError) { } message: {
+                    Text(viewModel.error?.description ?? "")
+                }
+                .alert(viewModel.alert?.title ?? "", isPresented: $viewModel.isShowingAlert) {
                     Button("Cancel", role: .cancel) { }
+                    
+                    if let alert = viewModel.alert {
+                        AlertButton(alert: alert) {
+                            switch alert {
+                            case .savePhoto:
+                                if let selectedImage = viewModel.selectedImage {
+                                    photoLibraryHandler.saveImage(selectedImage)
+                                    viewModel.emptyCache()
+                                }
+                            case .cleanCache:
+                                viewModel.emptyCache()
+                            }
+                        }
+                    }
                     Button("Save") {
                         if let selectedImage = viewModel.selectedImage {
                             photoLibraryHandler.saveImage(selectedImage)
@@ -100,14 +117,7 @@ struct EditorView: View {
                         }
                     }
                 } message: {
-                    Text("This action will be save the image in your photo library.")
-                }
-                .alert("Clean Photo", isPresented: $isShowingCleanCacheAlert) {
-                    Button("Clean", role: .destructive) {
-                        viewModel.emptyCache()
-                    }
-                } message: {
-                    Text("When you confirm this action, you won't be able to return at the current state.")
+                    Text(viewModel.alert?.description ?? "")
                 }
             }
             .padding()
@@ -117,6 +127,8 @@ struct EditorView: View {
         }
     }
 }
+
+
 
 #Preview {
     EditorView()
