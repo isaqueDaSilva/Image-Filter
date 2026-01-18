@@ -9,7 +9,7 @@ import PhotosUI
 import SwiftUI
 
 struct EditorView: View {
-    @State private var editorHandler = EditorHandler()
+    @State private var viewModel = ViewModel()
     @State private var photoLibraryHandler = PhotoLibraryHandler()
     @State private var isSavingPhotoAlert = false
     @State private var isShowingCleanCacheAlert = false
@@ -25,15 +25,15 @@ struct EditorView: View {
                 
                 layout {
                     ImageView(
-                        imageState: editorHandler.imageState,
-                        image: editorHandler.selectedImage?.swiftuiImage
+                        imageState: viewModel.imageState,
+                        image: viewModel.selectedImage?.swiftuiImage
                     )
                     .frame(width: frame, height: frame)
                     
-                    if editorHandler.imageState == .empty {
+                    if viewModel.imageState == .empty {
                         PhotoPickerButton(
-                            imageSelection: $editorHandler.imageSelection,
-                            isDisabled: false /*photoLibraryHandler.readWriteAuthorizationStatus != .authorized*/
+                            imageSelection: $viewModel.imageSelection,
+                            isDisabled: photoLibraryHandler.readWriteAuthorizationStatus != .authorized
                         )
                     }
                 }
@@ -42,26 +42,26 @@ struct EditorView: View {
                     #if os(iOS)
                     ToolbarItem(placement: .bottomBar) {
                         FilterPickerMenu {
-                            editorHandler.applyNegativeFilter()
+                            viewModel.applyNegativeFilter()
                         }
-                        .disabled(editorHandler.cache.isEmpty)
+                        .disabled(viewModel.cache.isEmpty)
                     }
                     #elseif os(macOS)
                     ToolbarItem(placement: .primaryAction) {
                         FilterPickerMenu {
-                            editorHandler.applyNegativeFilter()
+                            viewModel.applyNegativeFilter()
                         }
-                        .disabled(editorHandler.cache.isEmpty)
+                        .disabled(viewModel.cache.isEmpty)
                     }
                     #endif
                     
                     ToolbarItem(placement: .confirmationAction) {
                         SaveButton {
-                            if editorHandler.cache.count > 1 {
+                            if viewModel.cache.count > 1 {
                                 isSavingPhotoAlert = true
                             }
                         }
-                        .disabled(editorHandler.cache.count <= 1)
+                        .disabled(viewModel.cache.count <= 1)
                     }
                     
                     ToolbarItem(placement: .cancellationAction) {
@@ -70,42 +70,41 @@ struct EditorView: View {
                         } label: {
                             Text("Clean Photo")
                         }
-                        .disabled(editorHandler.cache.isEmpty)
+                        .disabled(viewModel.cache.isEmpty)
                     }
                     
                     ToolbarItem(placement: .principal) {
                         HStack {
                             Button {
-                                editorHandler.previousImage()
+                                viewModel.previousImage()
                             } label: {
                                 Image(systemName: "arrow.counterclockwise")
                             }
-                            .disabled(editorHandler.cache.isEmpty || editorHandler.cache.first == editorHandler.selectedImage)
+                            .disabled(viewModel.cache.isEmpty || viewModel.cache.first == viewModel.selectedImage)
                             
                             Button {
-                                editorHandler.nextImage()
+                                viewModel.nextImage()
                             } label: {
                                 Image(systemName: "arrow.clockwise")
                             }
-                            .disabled(editorHandler.cache.isEmpty || editorHandler.cache.last == editorHandler.selectedImage)
+                            .disabled(viewModel.cache.isEmpty || viewModel.cache.last == viewModel.selectedImage)
                         }
                     }
                 }
                 .alert("Save Photo", isPresented: $isSavingPhotoAlert) {
-                    Button("Cancel") { }
+                    Button("Cancel", role: .cancel) { }
                     Button("Save") {
-                        if let selectedImage = editorHandler.selectedImage {
+                        if let selectedImage = viewModel.selectedImage {
                             photoLibraryHandler.saveImage(selectedImage)
-                            editorHandler.emptyCache()
+                            viewModel.emptyCache()
                         }
                     }
                 } message: {
                     Text("This action will be save the image in your photo library.")
                 }
                 .alert("Clean Photo", isPresented: $isShowingCleanCacheAlert) {
-                    //Button("Cancel") { }
                     Button("Clean", role: .destructive) {
-                        editorHandler.emptyCache()
+                        viewModel.emptyCache()
                     }
                 } message: {
                     Text("When you confirm this action, you won't be able to return at the current state.")

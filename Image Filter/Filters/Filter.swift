@@ -13,10 +13,16 @@ struct Filter { }
 
 extension Filter {
     enum Negative {
-        static func apply(at image: DefaultImage) throws(ImageRepresentableError) -> DefaultImage {
+        static func apply(at image: DefaultImage) async throws(ImageRepresentableError) -> DefaultImage {
             var buffer = try image.getPixelBuffer()
             processingNegative(buffer: &buffer)
             
+            let imageFormat = try buildFormat()
+            
+            return try createImage(from: buffer, and: imageFormat)
+        }
+        
+        private static func buildFormat() throws(ImageRepresentableError) -> vImage_CGImageFormat {
             guard let imageFormat = vImage_CGImageFormat(
                 bitsPerComponent: 8,
                 bitsPerPixel: 8 * 4,
@@ -26,16 +32,7 @@ extension Filter {
                 throw .formatterNotAvailable
             }
             
-            do {
-                let negativeImage = try buffer.createCGImage(format: imageFormat)
-                #if canImport(UIKit)
-                return .init(cgImage: negativeImage)
-                #elseif canImport(AppKit)
-                return .init(cgImage: negativeImage, size: buffer.size)
-                #endif
-            } catch {
-                throw .failedToCreateCGImage
-            }
+            return imageFormat
         }
         
         private static func processingNegative(buffer: inout vImage_Buffer) {
@@ -44,6 +41,20 @@ extension Filter {
             let rowBytes = Int32(buffer.rowBytes)
             
             apply_negative(buffer.data, height, width, rowBytes)
+        }
+        
+        private static func createImage(from buffer: vImage_Buffer, and imageFormat: vImage_CGImageFormat) throws(ImageRepresentableError) -> DefaultImage {
+            do {
+                let negativeImage = try buffer.createCGImage(format: imageFormat)
+                #if canImport(UIKit)
+                return .init(cgImage: negativeImage)
+                #elseif canImport(AppKit)
+                return .init(cgImage: negativeImage, size: buffer.size)
+                #endif
+            } catch {
+                print(error.localizedDescription)
+                throw .failedToCreateCGImage
+            }
         }
     }
 }
