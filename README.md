@@ -98,33 +98,33 @@ ___
 ## Roadmap
 
 ### Filters and adjustments
-    [X] Negative [Finished]
-    [ ] Brightness and contrast (increase/decrease) [Now]
-    [ ] Color inversion [Next]
-    [ ] Thresholding (binary and adaptive variants as feasible) [Later]
-    [ ] Simple blur (box/average) [Later] 
-    [ ] Median filter (3×3 and 5×5) [Later] 
-    [ ] Posterization (color quantization) [Later] 
-    [ ] Mirror/flip and 90° rotation [Later] 
+    -[X] Negative [Finished]
+    -[ ] Brightness and contrast (increase/decrease) [Now]
+    -[ ] Color inversion [Next]
+    -[ ] Thresholding (binary and adaptive variants as feasible) [Later]
+    -[ ] Simple blur (box/average) [Later] 
+    -[ ] Median filter (3×3 and 5×5) [Later] 
+    -[ ] Posterization (color quantization) [Later] 
+    -[ ] Mirror/flip and 90° rotation [Later] 
 
 ### Binary morphology (on thresholded images)
-    [ ] Erosion [Later]
-    [ ] Dilation [Later]
-    [ ] Opening / Closing [Later]
-    [ ] Approximate object counting (component estimation on binary masks) [Later]
+    -[ ] Erosion [Later]
+    -[ ] Dilation [Later]
+    -[ ] Opening / Closing [Later]
+    -[ ] Approximate object counting (component estimation on binary masks) [Later]
 
 ### Edge and feature detection
-    - Rudimentary edge detection (e.g., Sobel/Prewitt) [Later]
+    -[ ] Rudimentary edge detection (e.g., Sobel/Prewitt) [Later]
 
 ### Capture and real-time
-    [ ] In-app camera access (capture directly from the app) [Later]
-    [ ] Real-time preview with filters applied at capture time (as device performance allows) [Later]
+    -[ ] In-app camera access (capture directly from the app) [Later]
+    -[ ] Real-time preview with filters applied at capture time (as device performance allows) [Later]
 
 ### Performance and UX
-    [ ] SIMD-first implementations where appropriate [Next]
-    [ ] Memory layout and copy minimization improvements [Later]
-    [ ] Non-destructive editing workflow [Later]
-    [ ] Presets and parameterized filters [Later]
+    -[ ] SIMD-first implementations where appropriate [Next]
+    -[ ] Memory layout and copy minimization improvements [Later]
+    -[ ] Non-destructive editing workflow [Later]
+    -[ ] Presets and parameterized filters [Later]
 
 ---
 
