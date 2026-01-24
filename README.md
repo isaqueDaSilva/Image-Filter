@@ -98,9 +98,10 @@ ___
 ## Roadmap
 
 ### Filters and adjustments
-- [X] Negative [Finished]
-- [ ] Brightness and contrast (increase/decrease) [Now]
-- [ ] Color inversion [Next]
+- [X] Color inversion [Finished]
+- [X] Brightness (increase/decrease) [Finished]
+- [ ] Contrast (increase/decrease) [Next]
+- [ ] Gray scale [Later]
 - [ ] Thresholding (binary and adaptive variants as feasible) [Later]
 - [ ] Simple blur (box/average) [Later] 
 - [ ] Median filter (3×3 and 5×5) [Later] 
