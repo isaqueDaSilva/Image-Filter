@@ -12,11 +12,14 @@ extension EditorView {
     @Observable
     @MainActor
     final class ViewModel {
-        private var filterTask: Task<Void, Never>?
+        private var processTask: Task<Void, Never>?
         private var photoLibraryGeterTask: Task<Void, Never>?
         
         private(set) var imageState: ImageState = .empty
         var selectedImage: DefaultImage?
+        
+        var isShowingBrightnessSlider = false
+        var sliderValue: Float = 1.0
         
         var cache: [DefaultImage] = []
         var currentImageIndex = 0
@@ -32,7 +35,6 @@ extension EditorView {
             didSet {
                 if let imageSelection {
                     loadTransferable(from: imageSelection)
-                    imageState = .loading
                 } else {
                     imageState = .empty
                 }
@@ -77,6 +79,7 @@ extension EditorView.ViewModel {
         cache.removeAll()
         currentImageIndex = 0
         selectedImage = nil
+        imageSelection = nil
         imageState = .empty
     }
 }
@@ -125,36 +128,83 @@ extension EditorView.ViewModel {
 
 // MARK: - Filters wrapper
 extension EditorView.ViewModel {
+    func showBrightnessSlider() {
+        isShowingBrightnessSlider = true
+    }
+    
+    private func stopExecution() async {
+        await MainActor.run { [weak self] in
+            guard let self else { return }
+            processTask?.cancel()
+            processTask = nil
+        }
+    }
+    
+    private func updateCache(with newImage: DefaultImage) async {
+        await MainActor.run { [weak self] in
+            guard let self else { return }
+            
+            appendAtCache(newImage: newImage)
+            self.selectedImage = newImage
+            imageState = .success
+        }
+    }
+    
+    private func setError(error: ImageRepresentableError?) async {
+        await MainActor.run { [weak self] in
+            guard let self else { return }
+            imageState = .failure
+            self.error = error
+            self.isShowingError = true
+        }
+    }
+    
     func applyNegativeFilter() {
-        filterTask?.cancel()
+        guard processTask == nil else { return }
         
-        filterTask = Task.detached { [weak self] in
-            guard let self, let selectedImage = await selectedImage else { return }
+        processTask?.cancel()
+        
+        processTask = Task.detached { [weak self] in
+            guard let self, let selectedImage = await selectedImage else {
+                await self?.stopExecution()
+                return
+            }
             
             do {
-                let newImage = try await Filter.Negative.apply(at: selectedImage)
+                let newImage = try await Filter.ColorInversion.apply(at: selectedImage)
                 
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    
-                    appendAtCache(newImage: newImage)
-                    self.selectedImage = newImage
-                    imageState = .success
-                }
+                await updateCache(with: newImage)
             } catch {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    imageState = .failure
-                    self.error = error as? ImageRepresentableError
-                    self.isShowingError = true
-                }
+                await setError(error: error as? ImageRepresentableError)
             }
             
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                filterTask?.cancel()
-                filterTask = nil
+            await stopExecution()
+        }
+    }
+    
+    func adjustBrightness() {
+        guard processTask == nil else { return }
+        
+        processTask?.cancel()
+        
+        processTask = Task.detached { [weak self] in
+            guard let self, let selectedImage = await cache.first else {
+                await self?.stopExecution()
+                return
             }
+            
+            do {
+                let newImage = try await Adjustments.Brightness.applyBrightnessAdjustment(
+                    for: selectedImage,
+                    with: sliderValue
+                )
+                
+                await updateCache(with: newImage)
+            } catch {
+                await setError(error: error as? ImageRepresentableError)
+            }
+            
+            await stopExecution()
         }
     }
 }
