@@ -34,6 +34,27 @@ struct EditorView: View {
                             isDisabled: photoLibraryHandler.readWriteAuthorizationStatus != .authorized
                         )
                     }
+                    
+                    if viewModel.isShowingBrightnessSlider {
+                        VStack {
+                            Slider(
+                                value: $viewModel.sliderValue,
+                                in: 0.1...3.0,
+                                step: 0.1) {
+                                    Text("Brightness")
+                                } minimumValueLabel: {
+                                    Text("0.1")
+                                } maximumValueLabel: {
+                                    Text("3.0")
+                                } onEditingChanged: { isChanged in
+                                    if isChanged {
+                                        viewModel.adjustBrightness()
+                                    }
+                                }
+                            
+                            Text("\(viewModel.sliderValue)")
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .toolbar {
@@ -41,6 +62,8 @@ struct EditorView: View {
                     ToolbarItem(placement: .bottomBar) {
                         FilterPickerMenu {
                             viewModel.applyNegativeFilter()
+                        } brightnessAdjustment: {
+                            viewModel.showBrightnessSlider()
                         }
                         .disabled(viewModel.cache.isEmpty)
                     }
@@ -48,6 +71,8 @@ struct EditorView: View {
                     ToolbarItem(placement: .primaryAction) {
                         FilterPickerMenu {
                             viewModel.applyNegativeFilter()
+                        } brightnessAdjustment: {
+                            viewModel.showBrightnessSlider()
                         }
                         .disabled(viewModel.cache.isEmpty)
                     }
