@@ -32,18 +32,8 @@ extension DefaultImage {
             throw .convertionFailed
         }
         
-        guard let imageFormat = vImage_CGImageFormat(
-            bitsPerComponent: 8,
-            bitsPerPixel: 8 * 4,
-            colorSpace: CGColorSpace(name: CGColorSpace.displayP3)!,
-            bitmapInfo: .init(rawValue: CGImageAlphaInfo.noneSkipFirst.rawValue))
-        else {
-            throw .formatterNotAvailable
-        }
-        
         do {
-            // A buffer that stores image's data like pixel data, number of channels and more
-            return try vImage_Buffer(cgImage: cgImage, format: imageFormat)
+            return try vImage_Buffer(cgImage: cgImage, format: .rgbFormat)
         } catch {
             throw .convertionFailed
         }
