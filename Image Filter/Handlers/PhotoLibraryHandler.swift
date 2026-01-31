@@ -34,15 +34,21 @@ final class PhotoLibraryHandler {
         }
     }
     
-    func saveImage(_ image: DefaultImage) {
-        guard readWriteAuthorizationStatus == .authorized else { return }
+    func saveImage(_ image: DefaultImage) -> ImageRepresentableError? {
+        guard readWriteAuthorizationStatus == .authorized else { return .photoLibraryAccessDenied }
+        
+        var saveError: ImageRepresentableError?
         
         PHPhotoLibrary.shared().performChanges {
             PHAssetChangeRequest.creationRequestForAsset(from: image)
+            saveError = nil
         } completionHandler: { isSuccesseded, error in
             if !isSuccesseded {
                 print(error?.localizedDescription ?? "No Error.")
+                saveError = .failedToSaveImage
             }
         }
+        
+        return saveError
     }
 }
