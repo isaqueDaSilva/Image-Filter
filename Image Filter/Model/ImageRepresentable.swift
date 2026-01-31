@@ -8,8 +8,11 @@
 import PhotosUI
 import SwiftUI
 
-struct ImageRepresentable: Transferable {
+struct ImageRepresentable: Transferable, Equatable {
     let image: DefaultImage
+    let applyedFilter: Filter?
+    let applyedAdjustments: Adjustment?
+    let levelOfAdjustment: Float
     
     static var transferRepresentation: some TransferRepresentation {
         DataRepresentation(importedContentType: .image) { data in
@@ -18,12 +21,20 @@ struct ImageRepresentable: Transferable {
             }
             
             return await MainActor.run {
+                #if canImport(UIKit)
+                let normalized = defaultImage.normalizedUpOrientation()
+                return Self(from: normalized)
+                #else
                 return Self(from: defaultImage)
+                #endif
             }
         }
     }
     
-    init(from defaultImage: DefaultImage) {
-        self.image = defaultImage
+    init(from originalImage: DefaultImage, applyedFilter: Filter? = nil, applyedAdjustments: Adjustment? = nil, levelOfAdjustment: Float = 0) {
+        self.image = originalImage
+        self.applyedFilter = applyedFilter
+        self.applyedAdjustments = applyedAdjustments
+        self.levelOfAdjustment = levelOfAdjustment
     }
 }
