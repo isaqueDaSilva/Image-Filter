@@ -9,14 +9,15 @@ import SwiftUI
 
 struct ImageView: View {
     let imageState: ImageState
-    let image: Image?
+    let image: DefaultImage?
     
     var body: some View {
         Group {
             switch imageState {
             case .success:
                 if let image {
-                    image.resizable()
+                    Image(image)
+                        .resizable()
                 }
             case .loading:
                 ProgressView()

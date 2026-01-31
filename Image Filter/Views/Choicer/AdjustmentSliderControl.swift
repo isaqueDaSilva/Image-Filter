@@ -10,8 +10,7 @@ import SwiftUI
 struct AdjustmentSliderControl: View {
     @Binding var value: Float
     let selectedAdjustment: Adjustment
-    var adjustmentAction: (Adjustment, Float) -> Void
-    var cacheAction: () -> Void
+    var confirmAction: () -> Void
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -33,15 +32,11 @@ struct AdjustmentSliderControl: View {
                 Text(selectedAdjustment.rangeValue.lowerBound, format: .number)
             } maximumValueLabel: {
                 Text(selectedAdjustment.rangeValue.upperBound, format: .number)
-            } onEditingChanged: { isChanged in
-                if isChanged {
-                    adjustmentAction(selectedAdjustment, value)
-                }
             }
             .padding(.bottom)
             
             Button {
-                cacheAction()
+                confirmAction()
             } label: {
                 Text("Confirm")
                     .bold()

@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct CardView<Item: Identifiable & Equatable>: View {
-    @Binding var selectedItem: Item
+    @Binding var selectedItem: Item?
     let title: String
     let item: Item
     
