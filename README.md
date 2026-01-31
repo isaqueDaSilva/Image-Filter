@@ -60,10 +60,10 @@ _*Coming Soon*_
 
 ---
 
-## Available Filters
+## Available Filters and Adjustments
 
 * Negative
-
+* Increase/Decrease brightness
 ___
 
 ## Architecture Overview
