@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 enum Adjustment: String, CaseIterable, Identifiable {
-    case none, increaseBrightness, decreaseBrightness
+    case brightness
     
     var id: String {
         self.rawValue
@@ -18,31 +18,33 @@ enum Adjustment: String, CaseIterable, Identifiable {
     
     var rawValue: String {
         switch self {
-        case .none:
-            "None"
-        case .increaseBrightness:
-            "Increase Brightness"
-        case .decreaseBrightness:
-            "Decrease Brightness"
+        case .brightness:
+            "Brightness"
+        }
+    }
+    
+    var rangeValue: ClosedRange<Float> {
+        switch self {
+        case .brightness:
+            0.5 ... 2.2
+        }
+    }
+    
+    var normalValue: Float {
+        switch self {
+        case .brightness:
+            1
         }
     }
 }
 
 extension Adjustment {
-    static func applyIncreaseBrightness(for defaultImage: DefaultImage) async throws(ImageRepresentableError) -> DefaultImage {
-        try await applyBrightnessAdjustment(for: defaultImage, with: 0.45)
-    }
-    
-    static func applydecreaseBrightness(for defaultImage: DefaultImage) async throws(ImageRepresentableError) -> DefaultImage {
-        try await applyBrightnessAdjustment(for: defaultImage, with: 2.2)
-    }
-    
-    static private func applyBrightnessAdjustment(
+    static func applyBrightnessAdjustment(
         for defaultImage: DefaultImage,
         with gamma: Float
     ) async throws(ImageRepresentableError) -> DefaultImage {
         var buffer = try defaultImage.getPixelBuffer()
-        proccessBrightnessAdjustment(at: &buffer, with: gamma)
+        proccessBrightnessAdjustment(at: &buffer, with: 1 / gamma)
         return try buffer.recreateImage(with: .rgbFormat)
     }
     
