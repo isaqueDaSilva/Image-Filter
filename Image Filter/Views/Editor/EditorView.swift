@@ -7,84 +7,60 @@
 
 import PhotosUI
 import SwiftUI
+import OrderedCollections
 
 struct EditorView: View {
     @State private var viewModel = ViewModel()
     @State private var photoLibraryHandler = PhotoLibraryHandler()
     
     var body: some View {
-        NavigationStack {
-            GeometryReader { proxy in
-                let heightSize = proxy.size.height
-                let widthSize = proxy.size.width
+        GeometryReader { proxy in
+            let staticHeight: CGFloat = 150
+            let width = proxy.size.width
+            let height = proxy.size.height
+            let actualHeight = width > height ? height : (height - staticHeight)
+            let layout = height > width ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
+            
+            layout {
+                ImageView(
+                    imageState: viewModel.imageState,
+                    image: viewModel.representable?.image
+                )
+                .frame(
+                    width: max(0, height > width ? width : height),
+                    height: max(0, actualHeight)
+                )
                 
-                let frame = ((heightSize > widthSize) ? widthSize : heightSize)
-                let layout = heightSize > widthSize ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
-                
-                layout {
-                    ImageView(
-                        imageState: viewModel.imageState,
-                        image: viewModel.selectedImage?.swiftuiImage
-                    )
-                    .frame(width: frame, height: frame)
-                    
+                Group {
                     if viewModel.imageState == .empty {
                         PhotoPickerButton(
                             imageSelection: $viewModel.imageSelection,
                             isDisabled: photoLibraryHandler.readWriteAuthorizationStatus != .authorized
                         )
-                    }
-                    
-                    if viewModel.isShowingBrightnessSlider {
-                        VStack {
-                            Slider(
-                                value: $viewModel.sliderValue,
-                                in: 0.1...3.0,
-                                step: 0.1) {
-                                    Text("Brightness")
-                                } minimumValueLabel: {
-                                    Text("0.1")
-                                } maximumValueLabel: {
-                                    Text("3.0")
-                                } onEditingChanged: { isChanged in
-                                    if isChanged {
-                                        viewModel.adjustBrightness()
-                                    }
-                                }
-                            
-                            Text("\(viewModel.sliderValue)")
-                        }
+                    } else if (viewModel.imageState == .success || viewModel.imageState == .loading) && viewModel.representable != nil {
+                        AdjustmentChoicerView(
+                            selectedFilter: $viewModel.selectedFilter,
+                            selectedAdjustment: $viewModel.selectedAdjustment,
+                            adjustmentLevel: $viewModel.adjustmentLevel
+                        )
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                #if os(iOS)
+                .frame(width: max(0, height > width ? width : height), height: max(0, staticHeight))
+                #elseif os(macOS)
+                .frame(maxWidth: .infinity)
+                .frame(height: staticHeight)
+                #endif
                 .toolbar {
-                    #if os(iOS)
-                    ToolbarItem(placement: .bottomBar) {
-                        FilterPickerMenu {
-                            viewModel.applyNegativeFilter()
-                        } brightnessAdjustment: {
-                            viewModel.showBrightnessSlider()
-                        }
-                        .disabled(viewModel.cache.isEmpty)
-                    }
-                    #elseif os(macOS)
-                    ToolbarItem(placement: .primaryAction) {
-                        FilterPickerMenu {
-                            viewModel.applyNegativeFilter()
-                        } brightnessAdjustment: {
-                            viewModel.showBrightnessSlider()
-                        }
-                        .disabled(viewModel.cache.isEmpty)
-                    }
-                    #endif
-                    
                     ToolbarItem(placement: .confirmationAction) {
                         SaveButton {
-                            if viewModel.cache.count > 1 {
+                            if !viewModel.cache.isEmpty {
                                 viewModel.showAlert(.savePhoto)
                             }
                         }
-                        .disabled(viewModel.cache.count <= 1)
+                        .disabled(
+                            viewModel.cache.isEmpty || viewModel.representable?.image == viewModel.cache[viewModel.originalImageKey]?.image
+                        )
                     }
                     
                     ToolbarItem(placement: .cancellationAction) {
@@ -105,14 +81,14 @@ struct EditorView: View {
                             } label: {
                                 Image(systemName: "arrow.counterclockwise")
                             }
-                            .disabled(viewModel.cache.isEmpty || viewModel.cache.first == viewModel.selectedImage)
+                            .disabled(viewModel.currentImageIndex == 0)
                             
                             Button {
                                 viewModel.nextImage()
                             } label: {
                                 Image(systemName: "arrow.clockwise")
                             }
-                            .disabled(viewModel.cache.isEmpty || viewModel.cache.last == viewModel.selectedImage)
+                            .disabled(viewModel.cache.isEmpty ||  viewModel.currentImageIndex == viewModel.cache.elements.count - 1)
                         }
                     }
                 }
@@ -126,9 +102,14 @@ struct EditorView: View {
                         AlertButton(alert: alert) {
                             switch alert {
                             case .savePhoto:
-                                if let selectedImage = viewModel.selectedImage {
-                                    photoLibraryHandler.saveImage(selectedImage)
-                                    viewModel.emptyCache()
+                                if let selectedImage = viewModel.representable?.image {
+                                    let error = photoLibraryHandler.saveImage(selectedImage)
+                                    
+                                    if let error {
+                                        viewModel.setError(error)
+                                    } else {
+                                        viewModel.emptyCache()
+                                    }
                                 }
                             case .cleanCache:
                                 viewModel.emptyCache()
@@ -139,15 +120,13 @@ struct EditorView: View {
                     Text(viewModel.alert?.description ?? "")
                 }
             }
-            .padding()
-            .task {
-                await photoLibraryHandler.checkAuthorizationStatus()
-            }
+        }
+        .padding()
+        .task {
+            await photoLibraryHandler.checkAuthorizationStatus()
         }
     }
 }
-
-
 
 #Preview {
     EditorView()
