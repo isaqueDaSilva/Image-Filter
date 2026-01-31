@@ -9,23 +9,38 @@ import Accelerate
 import Foundation
 import SwiftUI
 
-struct Filter { }
+enum Filter: String, CaseIterable, Identifiable {
+    case original, colorInvertion
+    
+    var id: String {
+        self.rawValue
+    }
+    
+    var rawValue: String {
+        switch self {
+        case .original:
+            "Original"
+        case .colorInvertion:
+            "Color Invertion"
+        }
+    }
+    
+    static var cacheKey: String = "Filter"
+}
 
 extension Filter {
-    enum ColorInversion {
-        static func apply(at image: DefaultImage) async throws(ImageRepresentableError) -> DefaultImage {
-            var buffer = try image.getPixelBuffer()
-            invertColors(buffer: &buffer)
-            
-            return try buffer.recreateImage(with: .rgbFormat)
-        }
+    static func applyColorInversion(at image: DefaultImage) async throws(ImageRepresentableError) -> DefaultImage {
+        var buffer = try image.getPixelBuffer()
+        invertColors(buffer: &buffer)
         
-        private static func invertColors(buffer: inout vImage_Buffer) {
-            let height = Int32(buffer.height)
-            let width = Int32(buffer.width)
-            let rowBytes = Int32(buffer.rowBytes)
-            
-            ImageKit.apply_inverse(buffer.data, height, width, rowBytes)
-        }
+        return try buffer.recreateImage(with: .rgbFormat)
+    }
+    
+    private static func invertColors(buffer: inout vImage_Buffer) {
+        let height = Int32(buffer.height)
+        let width = Int32(buffer.width)
+        let rowBytes = Int32(buffer.rowBytes)
+        
+        ImageKit.apply_inverse(buffer.data, height, width, rowBytes)
     }
 }
